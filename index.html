@@ -420,7 +420,7 @@ function vid(e, kind, poster){
   const p = e.file.replace("videos/","posters/").replace(".mp4",".jpg");
   return `<div class="cell">
     <video muted ${PAIR_SYNC?"":"loop"} playsinline preload="none" poster="${p}" data-src="${e.file}" data-ok="${e.ok?1:0}"></video>
-    ${PAIR_SYNC?`<div class="done"><span>${e.ok?"✓ Task completed":"✕ Episode ended"} · ${e.dur.toFixed(1)} s</span></div>`:""}
+    ${PAIR_SYNC?`<div class="done"><span>${e.ok?`✓ Task completed · ${e.dur.toFixed(1)} s`:"✕ Failed · 60 s time limit"}</span></div>`:""}
     <span class="tag ${kind}">${kind==="ours"?"Action Upcycling":"Baseline"}</span>
     <span class="badge ${e.ok?"ok":"fail"}">${e.ok?"success":"failure"}</span>
     <div class="stat">${e.calls} VLA calls · ${e.dur.toFixed(1)} s · ${e.hz} Hz${e.nexec?` · n_exec ${e.nexec}`:""}</div>
