@@ -358,8 +358,7 @@ footer{padding:36px 0 48px;color:var(--muted);font-size:14px;text-align:center;b
 
   <div class="videos-wrap">
   <div class="speedbar"><div class="speed"><span>Playback</span><button data-r="1" class="active">×1</button><button data-r="2">×2</button><button data-r="5">×5</button></div></div>
-  <h3 style="margin-top:8px">Baseline failure vs. Action Upcycling success</h3>
-  <p class="muted small">Episodes with the same index under each protocol. Sessions were recorded separately, so the pairs are not physically identical initial states. The overlay shows the number of policy calls and the episode duration.</p>
+  <h3 style="margin-top:8px">Baseline comparison</h3>
   <div class="legend"><span><i style="background:var(--ours)"></i>Ours</span><span><i style="background:#555"></i>Baseline</span><span><i style="background:var(--ours)"></i>success</span><span><i style="background:var(--fail)"></i>failure</span></div>
   <div class="carousel">
     <button class="cbtn" id="sprev" aria-label="Previous">&#8249;</button>
@@ -368,8 +367,8 @@ footer{padding:36px 0 48px;color:var(--muted);font-size:14px;text-align:center;b
   </div>
   <div class="cdots" id="sdots"></div>
 
-  <h3>All tasks</h3>
-  <p class="muted small">Both protocols succeed in every pair. Baseline: the successful episode with the median duration. Action Upcycling: its fastest successful episode. Four tasks per page; use the arrows or the chips to browse.</p>
+  <h3>More results</h3>
+  <p class="muted small">Action Upcycling completes tasks faster than the baseline: time per episode drops from 24.9 s to 21.5 s with π0.5 and from 28.0 s to 24.9 s with GR00T N1.6, with fewer policy calls (Tables 3 and 4). Four tasks per page; use the arrows or the chips to browse.</p>
   <div class="tabs" id="tabs"></div>
   <div class="carousel">
     <button class="cbtn" id="cprev" aria-label="Previous task">&#8249;</button>
