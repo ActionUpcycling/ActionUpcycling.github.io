@@ -4,7 +4,7 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>Action Upcycling</title>
-<meta name="description" content="Don't Throw Away the Tail: Action Upcycling for Policy Acceleration. A training-free rule that reuses discarded action-chunk tails to cut VLA policy calls by 1.2–1.6× with no loss in success.">
+<meta name="description" content="Don't Throw Away the Tail: Action Upcycling for Policy Acceleration. A training-free rule that reuses discarded action-chunk tails to cut VLA policy calls by 1.2–1.7× with no loss in success.">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.11/dist/katex.min.css">
@@ -211,9 +211,9 @@ footer{padding:36px 0 48px;color:var(--muted);font-size:14px;text-align:center;b
   </div>
 
   <div class="kpis">
-    <div class="kpi"><b>1.2–1.6×</b><span>fewer policy calls in simulation</span></div>
+    <div class="kpi"><b>1.2–1.7×</b><span>fewer policy calls in simulation</span></div>
     <div class="kpi"><b>11 / 11</b><span>model × benchmark cells with success ≥ baseline</span></div>
-    <div class="kpi"><b>−18%</b><span>VLA call rate on a real YAM arm (π0.5), 72/80 → 77/80 success</span></div>
+    <div class="kpi"><b>48.3 → 34.0</b><span>VLA calls per episode on a real YAM arm (π0.5), 72/80 → 77/80 success</span></div>
     <div class="kpi"><b>0</b><span>training, extra samples, or model internals required</span></div>
   </div>
 </section>
@@ -229,7 +229,7 @@ footer{padding:36px 0 48px;color:var(--muted);font-size:14px;text-align:center;b
     <p>We propose <b>Action Upcycling</b>, a training-free algorithm that reuses actions the policy would otherwise discard, without accessing model internals or drawing extra samples.
     We find that discarded actions stay close to their replanned versions as long as the action velocity remains smooth.
     Action Upcycling therefore extends the execution horizon up to the point where the velocity begins to fluctuate.</p>
-    <p>Extensive experiments on simulated and real-world manipulation tasks show that Action Upcycling consistently reduces policy calls by 1.2–1.6× with no loss in success rate, across both VLAs and a world action model.
+    <p>Extensive experiments on simulated and real-world manipulation tasks show that Action Upcycling consistently reduces policy calls by 1.2–1.7× with no loss in success rate, across both VLAs and a world action model.
     It is applicable to any chunked policy at negligible cost and is orthogonal to model acceleration methods such as few-step sampling and streaming action decoding, opening a new axis for policy acceleration.</p>
   </div>
 </section>
@@ -239,7 +239,7 @@ footer{padding:36px 0 48px;color:var(--muted);font-size:14px;text-align:center;b
   <h2>Method</h2>
   <div class="narrow">
     <p>A chunked policy \(\pi\) predicts \(H\) actions per call, \(A=\pi(o_t)=(a_1,\dots,a_H)\), executes the prefix \(a_1,\dots,a_h\), and discards the tail.
-    Action Upcycling reuses the trustworthy part of the tail, so that each call executes \(h+\Delta h\) actions and the number of policy calls drops by the <b>upcycling ratio</b> \(r = 1 + \Delta h / h\).
+    Action Upcycling reuses the trustworthy part of the tail, so that the \(i\)-th call executes \(h+\Delta h_i\) actions. With the mean execution length \(\bar h = \frac{1}{N}\sum_i (h+\Delta h_i)\), the <b>upcycling ratio</b> \(r = \bar h / h \in [1, H/h]\) gives the reduction in policy calls: \(r=2\) halves the calls and \(r=1\) recovers the default setting.
     Everything is computed from the predicted chunk itself: no gradients, no attention maps, no extra samples.</p>
   </div>
 
@@ -268,8 +268,8 @@ footer{padding:36px 0 48px;color:var(--muted);font-size:14px;text-align:center;b
     </div>
     <div class="step"><span class="n">3</span>
       <h4>Threshold from a target ratio</h4>
-      <p>Because \(c_k\) depends only on the predicted chunk, \(\Delta h(\tau)\) can be evaluated on any chunk without executing it. Collect tail signals from the policy's own rollouts into a pool \(\mathcal C\) and pick the smallest \(\tau\in\mathcal C\) whose mean reused length satisfies \(\Delta h(\tau)\ge(r-1)\,h\).</p>
-      <p>One scalar \(\tau\) per model and benchmark, fixed offline; no per-task tuning, no run-time adaptation.</p>
+      <p>\(\Delta h_i\) is non-decreasing in \(\tau\), so the ratio \(r\) grows with \(\tau\) and the threshold for a target \(r\) is found by a simple search. Collect the tail signals \(c_{h+1},\dots,c_H\) of predicted chunks into a pool \(\mathcal C\), which needs no extra rollouts because \(c_k\) depends only on the chunk, and pick the smallest \(\tau\in\mathcal C\) with \(\bar h(\tau)\ge r\,h\).</p>
+      <p>The pool comes from the policy's own rollouts, without demonstrations or success labels. One scalar \(\tau\) per model and benchmark, fixed offline; no per-task tuning, no run-time adaptation.</p>
     </div>
   </div>
 </section>
@@ -279,7 +279,7 @@ footer{padding:36px 0 48px;color:var(--muted);font-size:14px;text-align:center;b
   <h2>Simulation Results</h2>
 
   <div class="narrow">
-    <p>We apply Action Upcycling to the released checkpoints of <b>π0.5</b>, <b>smolVLA</b>, <b>GR00T N1.7</b>, and <b>FastWAM</b> (a world action model) without any fine-tuning, on <b>LIBERO</b> (2,000 trials), <b>LIBERO-Plus</b> (504 perturbed trials), and <b>RoboTwin 2.0</b> (8 bimanual tasks, 160 trials, unseen instructions).
+    <p>We apply Action Upcycling to the released checkpoints of <b>π0.5</b>, <b>SmolVLA</b>, <b>GR00T N1.7</b>, and <b>FastWAM</b> (a world action model) without any fine-tuning, on <b>LIBERO</b> (2,000 trials), <b>LIBERO-Plus</b> (504 perturbed trials), and <b>RoboTwin 2.0</b> (50 bimanual tasks, clean and randomized settings).
     The baseline is each model's standard deployment protocol.</p>
   </div>
 
@@ -291,21 +291,21 @@ footer{padding:36px 0 48px;color:var(--muted);font-size:14px;text-align:center;b
       <tr><th>succ. ↑</th><th>calls / ep ↓</th><th>s / ep ↓</th><th class="ours">succ. ↑</th><th class="ours">calls / ep ↓</th><th class="ours">s / ep ↓</th></tr>
     </thead>
     <tbody>
-      <tr><td class="l" rowspan="4">LIBERO</td><td class="l">π0.5</td><td>96.9</td><td>32.4 (1×)</td><td>4.41</td><td class="ours">97.9 <span class="delta">(+1.0)</span></td><td class="ours">21.9 (1.48×)</td><td class="ours">3.00</td></tr>
-      <tr><td class="l">smolVLA</td><td>82.6</td><td>19.3 (1×)</td><td>1.82</td><td class="ours">82.8 <span class="delta">(+0.2)</span></td><td class="ours">14.7 (1.31×)</td><td class="ours">1.39</td></tr>
-      <tr><td class="l">GR00T N1.7</td><td>96.1</td><td>22.6 (1×)</td><td>2.59</td><td class="ours">96.6 <span class="delta">(+0.5)</span></td><td class="ours">15.0 (1.51×)</td><td class="ours">1.72</td></tr>
-      <tr><td class="l">FastWAM</td><td>97.4</td><td>15.7 (1×)</td><td>1.32</td><td class="ours">97.6 <span class="delta">(+0.2)</span></td><td class="ours">13.4 (1.18×)</td><td class="ours">1.12</td></tr>
-      <tr class="sep"><td class="l" rowspan="4">LIBERO-Plus</td><td class="l">π0.5</td><td>83.7</td><td>38.5 (1×)</td><td>5.27</td><td class="ours">86.5 <span class="delta">(+2.8)</span></td><td class="ours">23.9 (1.61×)</td><td class="ours">3.27</td></tr>
-      <tr><td class="l">smolVLA</td><td>31.8</td><td>29.4 (1×)</td><td>2.77</td><td class="ours">33.3 <span class="delta">(+1.5)</span></td><td class="ours">24.1 (1.22×)</td><td class="ours">2.27</td></tr>
-      <tr><td class="l">GR00T N1.7</td><td>82.1</td><td>36.4 (1×)</td><td>4.18</td><td class="ours">82.3 <span class="delta">(+0.2)</span></td><td class="ours">22.7 (1.60×)</td><td class="ours">2.61</td></tr>
-      <tr><td class="l">FastWAM</td><td>49.4</td><td>33.4 (1×)</td><td>2.79</td><td class="ours">49.6 <span class="delta">(+0.2)</span></td><td class="ours">22.5 (1.48×)</td><td class="ours">1.88</td></tr>
-      <tr class="sep"><td class="l" rowspan="3">RoboTwin 2.0</td><td class="l">π0.5</td><td>61.9</td><td>30.5 (1×)</td><td>4.63</td><td class="ours">68.1 <span class="delta">(+6.2)</span></td><td class="ours">19.0 (1.60×)</td><td class="ours">2.89</td></tr>
-      <tr><td class="l">smolVLA</td><td>50.6</td><td>36.2 (1×)</td><td>4.14</td><td class="ours">55.6 <span class="delta">(+5.0)</span></td><td class="ours">22.3 (1.62×)</td><td class="ours">2.55</td></tr>
-      <tr><td class="l">FastWAM</td><td>96.9</td><td>6.6 (1×)</td><td>1.40</td><td class="ours">98.8 <span class="delta">(+1.9)</span></td><td class="ours">5.4 (1.21×)</td><td class="ours">1.15</td></tr>
+      <tr><td class="l" rowspan="4">LIBERO</td><td class="l">π0.5</td><td>96.9</td><td>32.4 (1×)</td><td>4.41</td><td class="ours">97.9 <span class="delta">(+1.0)</span></td><td class="ours">21.9 (1.5×)</td><td class="ours">3.00</td></tr>
+      <tr><td class="l">SmolVLA</td><td>82.6</td><td>19.3 (1×)</td><td>1.82</td><td class="ours">82.8 <span class="delta">(+0.2)</span></td><td class="ours">14.7 (1.3×)</td><td class="ours">1.39</td></tr>
+      <tr><td class="l">GR00T N1.7</td><td>96.1</td><td>22.6 (1×)</td><td>2.59</td><td class="ours">96.6 <span class="delta">(+0.5)</span></td><td class="ours">15.0 (1.5×)</td><td class="ours">1.72</td></tr>
+      <tr><td class="l">FastWAM</td><td>97.4</td><td>15.7 (1×)</td><td>1.32</td><td class="ours">97.6 <span class="delta">(+0.2)</span></td><td class="ours">13.4 (1.2×)</td><td class="ours">1.12</td></tr>
+      <tr class="sep"><td class="l" rowspan="4">LIBERO-Plus</td><td class="l">π0.5</td><td>83.7</td><td>38.5 (1×)</td><td>5.27</td><td class="ours">86.5 <span class="delta">(+2.8)</span></td><td class="ours">23.9 (1.6×)</td><td class="ours">3.27</td></tr>
+      <tr><td class="l">SmolVLA</td><td>31.8</td><td>29.4 (1×)</td><td>2.77</td><td class="ours">33.3 <span class="delta">(+1.5)</span></td><td class="ours">24.1 (1.2×)</td><td class="ours">2.27</td></tr>
+      <tr><td class="l">GR00T N1.7</td><td>82.1</td><td>36.4 (1×)</td><td>4.18</td><td class="ours">82.3 <span class="delta">(+0.2)</span></td><td class="ours">22.7 (1.6×)</td><td class="ours">2.61</td></tr>
+      <tr><td class="l">FastWAM</td><td>49.4</td><td>33.4 (1×)</td><td>2.79</td><td class="ours">49.6 <span class="delta">(+0.2)</span></td><td class="ours">22.5 (1.5×)</td><td class="ours">1.88</td></tr>
+      <tr class="sep"><td class="l" rowspan="3">RoboTwin 2.0</td><td class="l">π0.5</td><td>59.7</td><td>40.9 (1×)</td><td>6.22</td><td class="ours">60.5 <span class="delta">(+0.8)</span></td><td class="ours">29.8 (1.4×)</td><td class="ours">4.53</td></tr>
+      <tr><td class="l">SmolVLA</td><td>34.8</td><td>50.6 (1×)</td><td>5.77</td><td class="ours">47.4 <span class="delta">(+12.6)</span></td><td class="ours">29.7 (1.7×)</td><td class="ours">3.39</td></tr>
+      <tr><td class="l">FastWAM</td><td>89.5</td><td>10.6 (1×)</td><td>2.27</td><td class="ours">90.6 <span class="delta">(+1.1)</span></td><td class="ours">8.7 (1.2×)</td><td class="ours">1.86</td></tr>
     </tbody>
   </table>
   </div>
-  <p class="tcap"><b>Table 1.</b> Success rate (%), policy calls per episode, and inference time per episode. Per-call latency is unchanged (π0.5 136 ms, smolVLA 94 ms, GR00T 115 ms, FastWAM 84–214 ms), so the time saving equals the call reduction. Action Upcycling matches or improves success in all 11 cells.</p>
+  <p class="tcap"><b>Table 1.</b> Success rate (%), policy calls per episode, and inference time per episode. Per-call latency is unchanged (π0.5 136 ms, SmolVLA 94 ms, GR00T 115 ms, FastWAM 84–214 ms), so the time saving equals the call reduction. Action Upcycling reduces policy calls by 1.2–1.7× and matches or improves success in all 11 cells. RoboTwin 2.0 covers all 50 tasks in both clean and randomized settings.</p>
 
   <div class="legend" style="margin:22px 0 -8px"><span><i style="background:#c9cdd3"></i>Baseline policy</span><span><i style="background:var(--ours)"></i>+ Action Upcycling</span></div>
   <div class="bars" id="bars"></div>
@@ -319,14 +319,14 @@ footer{padding:36px 0 48px;color:var(--muted);font-size:14px;text-align:center;b
       <tr><th>succ.</th><th>calls / ep</th><th>s / ep</th><th>succ.</th><th>calls / ep</th><th>s / ep</th><th>succ.</th><th>calls / ep</th><th>s / ep</th></tr>
     </thead>
     <tbody>
-      <tr><td class="l">Baseline</td><td>96.9</td><td>32.4 (1×)</td><td>4.41</td><td>83.7</td><td>38.5 (1×)</td><td>5.27</td><td>61.9</td><td>30.5 (1×)</td><td>4.63</td></tr>
-      <tr><td class="l">+ AAC (CVPR 2026), K = 20 samples</td><td>97.3</td><td>23.5 (1.38×)</td><td>18.9</td><td>84.5</td><td>27.1 (1.42×)</td><td>21.7</td><td>46.2</td><td>45.0 (0.65×)</td><td>41.9</td></tr>
-      <tr><td class="l">+ AutoHorizon (ECCV 2026), attention</td><td>97.4</td><td>22.3 (1.45×)</td><td>3.03</td><td>85.5</td><td>24.5 (1.57×)</td><td>3.33</td><td>65.6</td><td>19.9 (1.48×)</td><td>3.02</td></tr>
-      <tr><td class="l ours">+ Action Upcycling (ours)</td><td class="ours"><b>97.9</b></td><td class="ours"><b>21.9 (1.48×)</b></td><td class="ours"><b>3.00</b></td><td class="ours"><b>86.5</b></td><td class="ours"><b>23.9 (1.61×)</b></td><td class="ours"><b>3.27</b></td><td class="ours"><b>68.1</b></td><td class="ours"><b>19.0 (1.60×)</b></td><td class="ours"><b>2.89</b></td></tr>
+      <tr><td class="l">Baseline</td><td>96.9</td><td>32.4 (1×)</td><td>4.41</td><td>83.7</td><td>38.5 (1×)</td><td>5.27</td><td>59.7</td><td>40.9 (1×)</td><td>6.22</td></tr>
+      <tr><td class="l">+ AAC (CVPR 2026), K = 20 samples</td><td>97.3</td><td>23.5 (1.38×)</td><td>18.9</td><td>84.5</td><td>27.1 (1.42×)</td><td>21.7</td><td>–</td><td>–</td><td>–</td></tr>
+      <tr><td class="l">+ AutoHorizon (ECCV 2026), attention</td><td>97.4</td><td>22.3 (1.45×)</td><td>3.03</td><td>85.5</td><td>24.5 (1.57×)</td><td>3.33</td><td>–</td><td>–</td><td>–</td></tr>
+      <tr><td class="l ours">+ Action Upcycling (ours)</td><td class="ours"><b>97.9</b></td><td class="ours"><b>21.9 (1.48×)</b></td><td class="ours"><b>3.00</b></td><td class="ours"><b>86.5</b></td><td class="ours"><b>23.9 (1.61×)</b></td><td class="ours"><b>3.27</b></td><td class="ours"><b>60.5</b></td><td class="ours"><b>29.8 (1.37×)</b></td><td class="ours"><b>4.53</b></td></tr>
     </tbody>
   </table>
   </div>
-  <p class="tcap"><b>Table 2.</b> AAC draws 20 chunks per call and stops where samples disagree, so its per-call latency grows about six-fold (802 ms) and its time per episode exceeds the baseline. AutoHorizon reads the action expert's self-attention and, on RoboTwin 2.0, executes almost the whole chunk. Action Upcycling reads only the predicted chunk, adds no latency, and sets the budget directly through \(\tau\).</p>
+  <p class="tcap"><b>Table 2.</b> AAC draws 20 chunks per call and stops where the samples disagree, so its per-call latency grows about six-fold (802 ms) and its time per episode exceeds the baseline. AutoHorizon reads the action expert's self-attention and improves over the baseline. Action Upcycling reads only the predicted chunk, adds no latency, and achieves the highest success rate, the largest call reduction, and the shortest time per episode. Dashes: not evaluated on RoboTwin 2.0.</p>
 
 </section>
 
@@ -350,7 +350,7 @@ footer{padding:36px 0 48px;color:var(--muted);font-size:14px;text-align:center;b
       <ul>
         <li><b>Baseline</b>: stock deployment, re-plan on a fixed clock every h ticks, discard the rest of the chunk.</li>
         <li><b>Ours</b>: execute h ticks, then continue while \(\sum_k\lVert v_{k+1}-v_k\rVert\le\tau\) (v = first difference of joint targets, gripper excluded).</li>
-        <li>\(\tau\) calibrated <b>offline</b> per task from baseline tails (π0.5 ≈ 0.023, GR00T ≈ 0.065); never adapted at run time.</li>
+        <li>\(\tau\) is set <b>offline</b> from a pool of the policy's own rollouts, without demonstrations or success labels, for r = 1.25 (π0.5) and r = 1.1 (GR00T N1.6); never adapted at run time.</li>
         <li>12 task × model cells, 10 episodes per condition, binary success. Same checkpoint, cameras, velocity limit (0.75 rad/s) and reset procedure.</li>
       </ul>
     </div>
@@ -379,16 +379,30 @@ footer{padding:36px 0 48px;color:var(--muted);font-size:14px;text-align:center;b
   <div class="cdots" id="cdots"></div>
   </div>
   <h3>Results</h3>
-  <div class="tbl-wrap">
-  <table id="real-table">
-    <thead>
-      <tr><th class="l" rowspan="2">Model</th><th class="l" rowspan="2">Task</th><th colspan="2" class="group">Success</th><th colspan="2" class="group">Calls / ep (median)</th><th colspan="2" class="group">Call rate (Hz)</th><th rowspan="2">Call reduction</th></tr>
-      <tr><th>Base</th><th class="ours">Ours</th><th>Base</th><th class="ours">Ours</th><th>Base</th><th class="ours">Ours</th></tr>
-    </thead>
-    <tbody></tbody>
-  </table>
-  </div>
-  <p class="tcap"><b>Table 3.</b> Real-robot results on a YAM arm, 10 episodes per cell. π0.5: 72/80 → 77/80 success with an 18% lower call rate. GR00T N1.6: 34/40 → 35/40 with a 12% lower call rate. Call rate is calls divided by episode duration; the realized execution length matches the calibrated target (π0.5 ≈ 18.7 ticks, GR00T ≈ 10.3 ticks).</p>
+  <h4 style="margin:6px 0 4px;font-size:16px">π0.5 (H = 50, h = 15, r = 1.25)</h4>
+  <div class="tbl-wrap"><table><thead><tr><th class="l" rowspan="2">Task</th><th colspan="2" class="group">Success rate ↑</th><th colspan="2" class="group">Calls / ep ↓</th><th colspan="2" class="group">Time / ep (s) ↓</th></tr>
+<tr><th>Baseline</th><th class="ours">Ours</th><th>Baseline</th><th class="ours">Ours</th><th>Baseline</th><th class="ours">Ours</th></tr></thead><tbody>
+<tr><td class="l">Soccer ball → plate (layout 1)</td><td>10/10</td><td class="ours">10/10</td><td>26.9</td><td class="ours">26.8</td><td>14.4</td><td class="ours">17.4</td></tr>
+<tr><td class="l">Soccer ball → plate (layout 2)</td><td>10/10</td><td class="ours">10/10</td><td>36.5</td><td class="ours">20.7</td><td>19.0</td><td class="ours">12.9</td></tr>
+<tr><td class="l">Basketball → basket</td><td>10/10</td><td class="ours">10/10</td><td>31.3</td><td class="ours">24.9</td><td>16.5</td><td class="ours">15.8</td></tr>
+<tr><td class="l">Baseball → basket</td><td>10/10</td><td class="ours">10/10</td><td>32.1</td><td class="ours">25.0</td><td>17.1</td><td class="ours">16.1</td></tr>
+<tr><td class="l">Drawer: black ball → drawer</td><td>8/10</td><td class="ours">10/10<span class="up">▲</span></td><td>73.8</td><td class="ours">49.2</td><td>37.3</td><td class="ours">30.9</td></tr>
+<tr><td class="l">Drawer: basketball → drawer</td><td>8/10</td><td class="ours">8/10</td><td>61.2</td><td class="ours">40.7</td><td>31.6</td><td class="ours">25.5</td></tr>
+<tr><td class="l">Drawer: baseball → basket</td><td>7/10</td><td class="ours">9/10<span class="up">▲</span></td><td>67.9</td><td class="ours">40.6</td><td>34.3</td><td class="ours">25.5</td></tr>
+<tr><td class="l">Drawer: basketball → pot</td><td>9/10</td><td class="ours">10/10<span class="up">▲</span></td><td>56.9</td><td class="ours">44.5</td><td>28.7</td><td class="ours">27.8</td></tr>
+<tr class="sep"><td class="l"><b>Total / mean</b></td><td><b>72/80</b></td><td class="ours"><b>77/80</b></td><td><b>48.3</b></td><td class="ours"><b>34.0</b></td><td><b>24.9</b></td><td class="ours"><b>21.5</b></td></tr>
+</tbody></table></div>
+  <p class="tcap"><b>Table 3.</b> Real-world results with π0.5 on a YAM arm, 10 episodes per task. Success rises from 72/80 to 77/80 while policy calls per episode drop from 48.3 to 34.0 (1.42×). On the pick-and-place tasks the baseline already succeeds in every episode and calls drop by 1.30×; on the long-horizon drawer tasks success improves from 32/40 to 37/40 with 1.48× fewer calls. Time per episode also falls from 24.9 s to 21.5 s.</p>
+  <h4 style="margin:26px 0 4px;font-size:16px">GR00T N1.6 (H = 16, h = 9, r = 1.1)</h4>
+  <div class="tbl-wrap"><table><thead><tr><th class="l" rowspan="2">Task</th><th colspan="2" class="group">Success rate ↑</th><th colspan="2" class="group">Calls / ep ↓</th><th colspan="2" class="group">Time / ep (s) ↓</th></tr>
+<tr><th>Baseline</th><th class="ours">Ours</th><th>Baseline</th><th class="ours">Ours</th><th>Baseline</th><th class="ours">Ours</th></tr></thead><tbody>
+<tr><td class="l">Soccer ball → plate (layout 1)</td><td>10/10</td><td class="ours">10/10</td><td>56.8</td><td class="ours">50.3</td><td>17.8</td><td class="ours">17.7</td></tr>
+<tr><td class="l">Soccer ball → plate (layout 2)</td><td>8/10</td><td class="ours">9/10<span class="up">▲</span></td><td>102.2</td><td class="ours">81.7</td><td>31.5</td><td class="ours">28.8</td></tr>
+<tr><td class="l">Basketball → basket</td><td>8/10</td><td class="ours">8/10</td><td>95.6</td><td class="ours">69.9</td><td>29.6</td><td class="ours">24.3</td></tr>
+<tr><td class="l">Baseball → basket</td><td>8/10</td><td class="ours">8/10</td><td>107.9</td><td class="ours">82.3</td><td>33.1</td><td class="ours">28.9</td></tr>
+<tr class="sep"><td class="l"><b>Total / mean</b></td><td><b>34/40</b></td><td class="ours"><b>35/40</b></td><td><b>90.6</b></td><td class="ours"><b>71.0</b></td><td><b>28.0</b></td><td class="ours"><b>24.9</b></td></tr>
+</tbody></table></div>
+  <p class="tcap"><b>Table 4.</b> Real-world results with GR00T N1.6 on the four pick-and-place tasks, 10 episodes per task. Success 34/40 → 35/40, policy calls per episode 90.6 → 71.0, time per episode 28.0 s → 24.9 s. The short chunk (H = 16) caps the achievable ratio.</p>
 
 </section>
 
@@ -402,14 +416,14 @@ const MANIFEST = {"pi05_soccer-plate": {"model": "π0.5", "instruction": "pick u
 const PAIR_SYNC = true;
 
 const TASK_NAME = {
-  "soccer-plate":"Soccer ball → plate",
-  "soccer-plate-rev":"Soccer ball → plate",
+  "soccer-plate":"Soccer ball → plate (layout 1)",
+  "soccer-plate-rev":"Soccer ball → plate (layout 2)",
   "basketball-basket":"Basketball → basket",
   "baseball-basket":"Baseball → basket",
-  "drawer-blackball":"Drawer + black ball",
-  "drawer-basketball":"Drawer + basketball",
-  "drawer-baseball-basket":"Drawer + baseball → basket",
-  "drawer-basketball-pot":"Drawer + basketball → pot",
+  "drawer-blackball":"Drawer: black ball → drawer",
+  "drawer-basketball":"Drawer: basketball → drawer",
+  "drawer-baseball-basket":"Drawer: baseball → basket",
+  "drawer-basketball-pot":"Drawer: basketball → pot",
 };
 const ORDER = ["pi05_soccer-plate","pi05_soccer-plate-rev","pi05_basketball-basket","pi05_baseball-basket",
   "pi05_drawer-blackball","pi05_drawer-basketball","pi05_drawer-baseball-basket","pi05_drawer-basketball-pot",
@@ -432,25 +446,6 @@ function vid(e, kind, poster){
   const m = MANIFEST["pi05_drawer-blackball"]; const pr = m.showcase[1];
   document.getElementById("hero-instr").textContent = m.instruction;
   document.getElementById("hero").innerHTML = vid(pr.baseline,"base")+vid(pr.ours,"ours");
-})();
-
-// real table
-(function(){
-  const tb = document.querySelector("#real-table tbody"); let html="";
-  let prev=null;
-  ORDER.forEach(k=>{
-    const m=MANIFEST[k]; const red=Math.round((1-m.ours_hz/m.base_hz)*100);
-    const sep = prev && prev!==m.model ? ' class="sep"' : '';
-    html+=`<tr${sep}><td class="l">${m.model}</td><td class="l">${taskOf(k)}</td>
-      <td>${m.base_succ}/10</td><td class="ours">${m.ours_succ}/10${m.ours_succ>m.base_succ?'<span class="up">▲</span>':''}</td>
-      <td>${Math.round(m.base_calls)}</td><td class="ours">${Math.round(m.ours_calls)}</td>
-      <td>${m.base_hz.toFixed(2)}</td><td class="ours">${m.ours_hz.toFixed(2)}</td><td>−${red}%</td></tr>`;
-    prev=m.model;
-  });
-  const tot=(model)=>{const ks=ORDER.filter(k=>MANIFEST[k].model===model);const s=f=>ks.reduce((a,k)=>a+MANIFEST[k][f],0);const mean=f=>s(f)/ks.length;
-    return `<tr class="sep"><td class="l"><b>${model}</b></td><td class="l"><b>Total / mean</b></td><td><b>${s("base_succ")}/${ks.length*10}</b></td><td class="ours"><b>${s("ours_succ")}/${ks.length*10}</b></td>
-      <td><b>${mean("base_calls").toFixed(0)}</b></td><td class="ours"><b>${mean("ours_calls").toFixed(0)}</b></td><td><b>${mean("base_hz").toFixed(2)}</b></td><td class="ours"><b>${mean("ours_hz").toFixed(2)}</b></td><td><b>−${Math.round((1-mean("ours_hz")/mean("base_hz"))*100)}%</b></td></tr>`;};
-  tb.innerHTML = html + tot("π0.5") + tot("GR00T N1.6");
 })();
 
 // ===== Method animation =====
@@ -703,10 +698,10 @@ const g=id=>document.getElementById(id);
 // call bars
 (function(){
   const rows=[
-   ["LIBERO",[["π0.5",32.4,21.9],["smolVLA",19.3,14.7],["GR00T N1.7",22.6,15.0],["FastWAM",15.7,13.4]]],
-   ["LIBERO-Plus",[["π0.5",38.5,23.9],["smolVLA",29.4,24.1],["GR00T N1.7",36.4,22.7],["FastWAM",33.4,22.5]]],
-   ["RoboTwin 2.0",[["π0.5",30.5,19.0],["smolVLA",36.2,22.3],["FastWAM",6.6,5.4]]]];
-  const max=40; let html="";
+   ["LIBERO",[["π0.5",32.4,21.9],["SmolVLA",19.3,14.7],["GR00T N1.7",22.6,15.0],["FastWAM",15.7,13.4]]],
+   ["LIBERO-Plus",[["π0.5",38.5,23.9],["SmolVLA",29.4,24.1],["GR00T N1.7",36.4,22.7],["FastWAM",33.4,22.5]]],
+   ["RoboTwin 2.0",[["π0.5",40.9,29.8],["SmolVLA",50.6,29.7],["FastWAM",10.6,8.7]]]];
+  const max=52; let html="";
   rows.forEach(([b,rs])=>{ html+=`<div class="bar-group"><h5>${b}</h5>`;
     rs.forEach(([m,a,o])=>{ html+=`<div class="bar-row"><span class="lab">${m}</span><div><div class="bar base" style="width:${a/max*100}%"></div><div class="bar" style="width:${o/max*100}%;margin-top:3px"></div></div><span class="val">${(a/o).toFixed(2)}×</span></div>`; });
     html+=`</div>`; });
