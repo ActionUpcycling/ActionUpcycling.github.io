@@ -429,14 +429,14 @@ const ORDER = ["pi05_soccer-plate","pi05_soccer-plate-rev","pi05_basketball-bask
   "groot_soccer-plate","groot_soccer-plate-rev","groot_basketball-basket","groot_baseball-basket"];
 const taskOf = k => TASK_NAME[k.replace(/^(pi05|groot)_/,"")];
 
-function vid(e, kind, poster){
+function vid(e, kind, brief){
   const p = e.file.replace("videos/","posters/").replace(".mp4",".jpg");
   return `<div class="cell">
     <video muted ${PAIR_SYNC?"":"loop"} playsinline preload="none" poster="${p}" data-src="${e.file}" data-ok="${e.ok?1:0}"></video>
     ${PAIR_SYNC?`<div class="done"><span>${e.ok?`✓ Task completed · ${e.dur.toFixed(1)} s`:"✕ Failed · 60 s time limit"}</span></div>`:""}
     <span class="tag ${kind}">${kind==="ours"?"Action Upcycling":"Baseline"}</span>
     <span class="badge ${e.ok?"ok":"fail"}">${e.ok?"success":"failure"}</span>
-    <div class="stat">${e.calls} VLA calls · ${e.dur.toFixed(1)} s · ${e.hz} Hz${e.nexec?` · n_exec ${e.nexec}`:""}</div>
+    <div class="stat">${e.calls} VLA calls · ${e.dur.toFixed(1)} s${brief?"":` · ${e.hz} Hz`}</div>
   </div>`;
 }
 
@@ -444,7 +444,7 @@ function vid(e, kind, poster){
 (function(){
   const m = MANIFEST["pi05_drawer-blackball"]; const pr = m.showcase[1];
   document.getElementById("hero-instr").textContent = m.instruction;
-  document.getElementById("hero").innerHTML = vid(pr.baseline,"base")+vid(pr.ours,"ours");
+  document.getElementById("hero").innerHTML = vid(pr.baseline,"base",true)+vid(pr.ours,"ours",true);
 })();
 
 // ===== Method animation =====
