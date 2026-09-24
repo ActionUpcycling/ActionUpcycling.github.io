@@ -484,7 +484,9 @@ function vid(e, kind, poster){
   function policyBox(yTop,color){
     const g=el("g",{});
     // observation blocks feeding the policy
-    const sensors=[["camera",yTop-16,"o"],["state",yTop+32,"q"]].map(([name,y,sym],i)=>{
+    // group label: observation o_t above the two input blocks
+    const ol=txt(42,yTop-24,"",{"font-size":9.5,fill:C.mut,"text-anchor":"middle","font-weight":600},g); ol.innerHTML='observation o<tspan dy="1.6" font-size="7">t</tspan>';
+    const sensors=[["image",yTop-16,"o"],["state",yTop+32,"q"]].map(([name,y,sym],i)=>{
       const r=el("rect",{x:14,y,width:56,height:28,rx:7,fill:"#fff",stroke:"#c9cdd3","stroke-width":1.2},g);
       const t=txt(42,y+18,name,{"font-size":11,"font-weight":600,"text-anchor":"middle",fill:"#333"},g);
       const y1=y+14, y2=yTop+(i===0?14:30);
@@ -495,7 +497,7 @@ function vid(e, kind, poster){
     const box=el("rect",{x:96,y:yTop,width:70,height:44,rx:9,fill:"#fff",stroke:"#c9cdd3","stroke-width":1.5},g);
     const t1=txt(131,yTop+18,"Policy π",{"font-size":12,"font-weight":600,"text-anchor":"middle"},g);
     const t2=txt(131,yTop+33,"idle",{"font-size":10.5,fill:C.mut,"text-anchor":"middle","font-family":"JetBrains Mono,monospace"},g);
-    return {box,t1,t2,color,sensors};
+    return {box,t1,t2,color,sensors,ol};
   }
   function makeLane(starts,yTop,isOurs,axisY,color){
     const rows=starts.map((s,i)=>{const g=el("g",{"clip-path":"url(#laneClip)"});const y=yTop+i*RH;
@@ -522,6 +524,7 @@ function vid(e, kind, poster){
         const x=(1-u)**3*70+3*(1-u)**2*u*82+3*(1-u)*u*u*82+u**3*94, y=(1-u)**3*s.y1+3*(1-u)**2*u*s.y1+3*(1-u)*u*u*s.y2+u**3*s.y2;
         s.dot.setAttribute("cx",x);s.dot.setAttribute("cy",y);s.dot.setAttribute("opacity",1);}
       else s.dot.setAttribute("opacity",0);});
+    pb.ol.setAttribute("fill",observing?pb.color:C.mut);
     pb.box.setAttribute("fill",on?pb.color:"#fff");pb.box.setAttribute("stroke",on?pb.color:(observing?pb.color:"#c9cdd3"));
     pb.t1.setAttribute("fill",on?"#fff":"#1a1a1a");pb.t2.setAttribute("fill",on?"#fff":C.mut);
     pb.t2.textContent=on?`→ ${H} actions`:(observing?"observing…":"idle");
