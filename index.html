@@ -25,8 +25,10 @@ a:hover{text-decoration:underline}
 .narrow{max-width:820px;margin:0 auto}
 section{padding:56px 0;border-top:1px solid var(--line)}
 section:first-of-type{border-top:0}
-h1{font-size:clamp(28px,4.4vw,44px);line-height:1.15;font-weight:700;margin:0 0 6px;letter-spacing:-0.01em}
-h1 .sub{display:block;font-size:.62em;font-weight:600;color:var(--muted);margin-top:8px;letter-spacing:0}
+h1{font-size:clamp(28px,4.4vw,44px);line-height:1.2;font-weight:700;margin:0 0 6px;letter-spacing:-0.01em}
+h1 .pre{display:block;font-weight:500;color:var(--muted)}
+h1 .main{color:var(--fg);font-weight:800}
+h1 .post{font-weight:500;color:var(--muted)}
 h2{font-size:30px;font-weight:700;margin:0 0 24px;text-align:center;letter-spacing:-0.01em}
 h3{font-size:20px;font-weight:600;margin:32px 0 10px}
 p{margin:0 0 14px}
@@ -190,8 +192,9 @@ footer{padding:36px 0 48px;color:var(--muted);font-size:14px;text-align:center;b
 <body>
 
 <header class="wrap">
-  <h1>Don't Throw Away the Tail
-    <span class="sub">Action Upcycling for Policy Acceleration</span>
+  <h1>
+    <span class="pre">Don't Throw Away the Tail:</span>
+    <span class="main">Action Upcycling</span> <span class="post">for Policy Acceleration</span>
   </h1>
   <div class="authors">Anonymous Authors</div>
   <div class="btns">
