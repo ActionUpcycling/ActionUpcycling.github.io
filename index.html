@@ -339,22 +339,6 @@ footer{padding:36px 0 48px;color:var(--muted);font-size:14px;text-align:center;b
     π0.5 runs eight tasks and GR00T N1.6 runs four, each for 10 episodes under both protocols: 12 task–model cells × 2 protocols × 10 episodes = <b>240 real-world episodes</b> in total.</p>
   </div>
 
-  <div class="setup">
-    <div class="box"><h4>Policies</h4>
-      <ul>
-        <li><b>π0.5</b>: H = 50, h = 15 ticks (0.5 s), 10 denoising steps, target ratio r = 1.25 → 18.75 ticks per call.</li>
-        <li><b>GR00T N1.6</b>: H = 16, h = 9 ticks (0.3 s), target ratio r = 1.10 → 9.9 ticks per call. The short chunk caps the achievable ratio.</li>
-      </ul>
-    </div>
-    <div class="box"><h4>Protocol</h4>
-      <ul>
-        <li><b>Baseline</b>: stock deployment, re-plan on a fixed clock every h ticks, discard the rest of the chunk.</li>
-        <li><b>Ours</b>: execute h ticks, then continue while \(\sum_k\lVert v_{k+1}-v_k\rVert\le\tau\) (v = first difference of joint targets, gripper excluded).</li>
-        <li>\(\tau\) is set <b>offline</b> from a pool of the policy's own rollouts, without demonstrations or success labels, for r = 1.25 (π0.5) and r = 1.1 (GR00T N1.6); never adapted at run time.</li>
-        <li>12 task × model cells, 10 episodes per condition, binary success. Same checkpoint, cameras, velocity limit (0.75 rad/s) and reset procedure.</li>
-      </ul>
-    </div>
-  </div>
 
   <div class="videos-wrap">
   <div class="speedbar"><div class="speed"><span>Playback</span><button data-r="1" class="active">×1</button><button data-r="2">×2</button><button data-r="5">×5</button></div></div>
