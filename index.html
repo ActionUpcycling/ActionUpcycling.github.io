@@ -166,7 +166,7 @@ td b{font-weight:700}
 .adv th{background:var(--soft);padding:12px 16px;font-size:15.5px;font-weight:700;text-align:center;border-bottom:1px solid #d5d5d5}
 .adv th.l{background:#fff;border-right:1px solid var(--line)}
 .adv td{padding:13px 16px;text-align:left;white-space:normal;vertical-align:middle;border-bottom:1px solid var(--line);line-height:1.5}
-.adv td.l{width:34%;font-weight:600;color:#333;background:var(--soft);border-right:1px solid var(--line);text-align:center}
+.adv td.l{width:36%;font-weight:600;color:#333;background:var(--soft);border-right:1px solid var(--line);text-align:center}
 .adv tr:last-child td{border-bottom:0}
 @media (max-width:560px){.adv td.l{width:38%;font-size:14px}.adv td{font-size:14px}}
 /* bibtex */
@@ -240,10 +240,10 @@ footer{padding:36px 0 48px;color:var(--muted);font-size:14px;text-align:center;b
     <table class="adv">
       <thead><tr><th class="l"></th><th>Action Upcycling</th></tr></thead>
       <tbody>
-        <tr><td class="l">Policy acceleration</td><td><b>1.2–1.7× fewer policy calls</b> with matching or higher success rate, in simulation and on a real YAM arm</td></tr>
-        <tr><td class="l">Model-agnostic</td><td>Works unchanged on <b>VLAs</b> (π0.5, SmolVLA, GR00T N1.7) and a <b>world action model</b> (FastWAM): flow matching, diffusion transformer, or joint video–action decoding</td></tr>
-        <tr><td class="l">Training-free, zero overhead</td><td>No fine-tuning, no model internals, no extra samples. One scalar threshold \(\tau\) set offline from the policy's own rollouts</td></tr>
-        <tr><td class="l">Complementary</td><td>Stacks on per-call acceleration such as few-step sampling and streaming decoding (FlashVLA), reaching up to <b>6.7×</b> total speed-up</td></tr>
+        <tr><td class="l">Policy acceleration</td><td><b>1.2–1.7× fewer policy calls</b> · success rate ≥ baseline</td></tr>
+        <tr><td class="l">Model-agnostic</td><td><b>VLA</b> (π0.5, SmolVLA, GR00T) · <b>WAM</b> (FastWAM)</td></tr>
+        <tr><td class="l">Training-free</td><td>No fine-tuning · no model internals · no extra samples</td></tr>
+        <tr><td class="l">Complementary</td><td>Stacks with few-step sampling and FlashVLA · up to <b>6.7×</b></td></tr>
       </tbody>
     </table>
     </div>
