@@ -462,7 +462,7 @@ function vid(e, kind, poster){
 
   // scenario
   const H=16,h=5,T=60,TAU=0.30;
-  const X0=150,TW=9.8,BW=8.4,RH=12,BH=10;
+  const X0=230,TW=8.5,BW=7.3,RH=12,BH=10;
   const stdStarts=[];for(let s=0;s<T;s+=h)stdStarts.push(s);
   const hex=[8,6,10,7,9,8,6,10,5,9,7,8]; const ourStarts=[];{let s=0;for(const e of hex){ourStarts.push(s);s+=e;}}
   const rnd=(i,k)=>{const x=Math.sin(i*12.9898+k*78.233)*43758.5453;return x-Math.floor(x);};
@@ -473,6 +473,7 @@ function vid(e, kind, poster){
   const C={blue:"#2f6fed",blueL:"#c7d7fb",green:"#1f8a4c",greenL:"#bfe3cc",grey:"#e3e5e8",greyS:"#c9cdd3",fail:"#c62828",mut:"#5f6368"};
 
   const defs=el("defs",{}); const cp=el("clipPath",{id:"laneClip"},defs); el("rect",{x:0,y:0,width:X0+T*TW+3,height:390},cp);
+  const mk=el("marker",{id:"obsArrow",viewBox:"0 0 10 10",refX:"9",refY:"5",markerWidth:"6",markerHeight:"6",orient:"auto-start-reverse"},defs); el("path",{d:"M0 0L10 5L0 10z",fill:"#9aa0a6"},mk);
   // static labels
   txt(20,24,"Standard protocol",{"font-size":15,"font-weight":600});
   txt(190,24,`execute h = ${h} of H = ${H}, discard the tail, re-query on a fixed clock`,{"font-size":12,fill:C.mut});
@@ -488,10 +489,19 @@ function vid(e, kind, poster){
   // rows
   function policyBox(yTop,color){
     const g=el("g",{});
-    const box=el("rect",{x:16,y:yTop,width:70,height:44,rx:9,fill:"#fff",stroke:"#c9cdd3","stroke-width":1.5},g);
-    const t1=txt(51,yTop+18,"Policy π",{"font-size":12,"font-weight":600,"text-anchor":"middle"},g);
-    const t2=txt(51,yTop+33,"idle",{"font-size":10.5,fill:C.mut,"text-anchor":"middle","font-family":"JetBrains Mono,monospace"},g);
-    return {box,t1,t2,color};
+    // observation blocks feeding the policy
+    const sensors=[["camera",yTop-16,"o"],["state",yTop+32,"q"]].map(([name,y,sym],i)=>{
+      const r=el("rect",{x:14,y,width:56,height:28,rx:7,fill:"#fff",stroke:"#c9cdd3","stroke-width":1.2},g);
+      const t=txt(42,y+18,name,{"font-size":11,"font-weight":600,"text-anchor":"middle",fill:"#333"},g);
+      const y1=y+14, y2=yTop+(i===0?14:30);
+      const p=el("path",{d:`M70 ${y1} C82 ${y1}, 82 ${y2}, 94 ${y2}`,fill:"none",stroke:"#c9cdd3","stroke-width":1.4,"marker-end":"url(#obsArrow)"},g);
+      const dot=el("circle",{r:3.2,fill:color,opacity:0},g);
+      return {r,t,p,dot,y1,y2};
+    });
+    const box=el("rect",{x:96,y:yTop,width:70,height:44,rx:9,fill:"#fff",stroke:"#c9cdd3","stroke-width":1.5},g);
+    const t1=txt(131,yTop+18,"Policy π",{"font-size":12,"font-weight":600,"text-anchor":"middle"},g);
+    const t2=txt(131,yTop+33,"idle",{"font-size":10.5,fill:C.mut,"text-anchor":"middle","font-family":"JetBrains Mono,monospace"},g);
+    return {box,t1,t2,color,sensors};
   }
   function makeLane(starts,yTop,isOurs,axisY,color){
     const rows=starts.map((s,i)=>{const g=el("g",{"clip-path":"url(#laneClip)"});const y=yTop+i*RH;
@@ -505,12 +515,22 @@ function vid(e, kind, poster){
   }
   const stdL=makeLane(stdStarts,50,false,40,C.blue), ourL=makeLane(ourStarts,254,true,244,C.green);
   const std=stdL.rows, our=ourL.rows;
+  const OBS=0.35, INFER=0.95;
   function flashBox(pb,rows,tt){
     let age=Infinity;for(const r of rows){if(tt>=r.s)age=Math.min(age,tt-r.s);}
-    const on=age<0.6;
-    pb.box.setAttribute("fill",on?pb.color:"#fff");pb.box.setAttribute("stroke",on?pb.color:"#c9cdd3");
+    const observing=age<OBS, on=age>=OBS&&age<INFER;
+    // sensors light up and a sample travels along each arrow into the policy
+    pb.sensors.forEach(s=>{
+      s.r.setAttribute("fill",observing?pb.color:"#fff");s.r.setAttribute("stroke",observing?pb.color:"#c9cdd3");
+      s.t.setAttribute("fill",observing?"#fff":"#333");
+      s.p.setAttribute("stroke",observing?pb.color:"#c9cdd3");
+      if(observing){const u=age/OBS; // cubic bezier from (70,y1) via (82,y1),(82,y2) to (94,y2)
+        const x=(1-u)**3*70+3*(1-u)**2*u*82+3*(1-u)*u*u*82+u**3*94, y=(1-u)**3*s.y1+3*(1-u)**2*u*s.y1+3*(1-u)*u*u*s.y2+u**3*s.y2;
+        s.dot.setAttribute("cx",x);s.dot.setAttribute("cy",y);s.dot.setAttribute("opacity",1);}
+      else s.dot.setAttribute("opacity",0);});
+    pb.box.setAttribute("fill",on?pb.color:"#fff");pb.box.setAttribute("stroke",on?pb.color:(observing?pb.color:"#c9cdd3"));
     pb.t1.setAttribute("fill",on?"#fff":"#1a1a1a");pb.t2.setAttribute("fill",on?"#fff":C.mut);
-    pb.t2.textContent=on?`→ ${H} actions`:"idle";
+    pb.t2.textContent=on?`→ ${H} actions`:(observing?"observing…":"idle");
   }
   function pulse(rows,tt){for(const r of rows){const age=tt-r.s;
     if(age>=0&&age<0.9){r.ring.setAttribute("opacity",1-age/0.9);r.ring.setAttribute("r",2.5+age*14);}else r.ring.setAttribute("opacity",0);
@@ -545,7 +565,7 @@ function vid(e, kind, poster){
   const phL=txt(X0,380,"",{"font-size":10,fill:"#222","text-anchor":"middle","font-weight":600});
 
   // legend
-  const lg=el("g",{transform:"translate(150,206)"});
+  const lg=el("g",{transform:"translate(230,206)"});
   [[C.blue,"executed prefix"],[C.green,"upcycled tail"],[C.grey,"discarded",C.greyS],["#222","policy call",null,true]].forEach(([c,s,st,dot],i)=>{const x=i*150;
     if(dot)el("circle",{cx:x+6,cy:6,r:3,fill:c},lg);else el("rect",{x,y:0,width:13,height:12,rx:2,fill:c,stroke:st||"none","stroke-dasharray":st?"3 2":"none"},lg);
     txt(x+19,10,s,{"font-size":11,fill:C.mut},lg);});
