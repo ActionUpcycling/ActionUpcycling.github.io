@@ -84,6 +84,7 @@ tr.sep td{border-top:2px solid #d5d5d5}
 td.ours{background:var(--ours-soft);font-weight:600}
 th.ours{background:#d7ecdd}
 td b{font-weight:700}
+td u{text-decoration-thickness:1.5px;text-underline-offset:3px}
 .up{color:var(--ours);font-size:12px;vertical-align:super}
 .tcap{font-size:14px;color:var(--muted);margin:8px 0 0}
 .tcap b{color:var(--fg)}
@@ -338,14 +339,14 @@ footer{padding:36px 0 48px;color:var(--muted);font-size:14px;text-align:center;b
       <tr><th>succ.</th><th>calls / ep</th><th>s / ep</th><th>succ.</th><th>calls / ep</th><th>s / ep</th><th>succ.</th><th>calls / ep</th><th>s / ep</th></tr>
     </thead>
     <tbody>
-      <tr><td class="l">Baseline</td><td>96.9</td><td>32.4 (1×)</td><td>4.41</td><td>83.7</td><td>38.5 (1×)</td><td>5.27</td><td>59.7</td><td>40.9 (1×)</td><td>6.22</td></tr>
-      <tr><td class="l">+ AAC (CVPR 2026), K = 20 samples</td><td>97.3</td><td>23.5 (1.38×)</td><td>18.9</td><td>84.5</td><td>27.1 (1.42×)</td><td>21.7</td><td>–</td><td>–</td><td>–</td></tr>
-      <tr><td class="l">+ AutoHorizon (ECCV 2026), attention</td><td>97.4</td><td>22.3 (1.45×)</td><td>3.03</td><td>85.5</td><td>24.5 (1.57×)</td><td>3.33</td><td>–</td><td>–</td><td>–</td></tr>
-      <tr><td class="l ours">+ Action Upcycling (ours)</td><td class="ours"><b>97.9</b></td><td class="ours"><b>21.9 (1.48×)</b></td><td class="ours"><b>3.00</b></td><td class="ours"><b>86.5</b></td><td class="ours"><b>23.9 (1.61×)</b></td><td class="ours"><b>3.27</b></td><td class="ours"><b>60.5</b></td><td class="ours"><b>29.8 (1.37×)</b></td><td class="ours"><b>4.53</b></td></tr>
+      <tr><td class="l">Baseline</td><td>96.9</td><td>32.4 (1×)</td><td>4.41</td><td>83.7</td><td>38.5 (1×)</td><td>5.27</td><td><u>59.7</u></td><td>40.9 (1×)</td><td>6.22</td></tr>
+      <tr><td class="l">+ AAC (CVPR 2026), K = 20 samples</td><td>97.3</td><td>23.5 (1.38×)</td><td>18.9</td><td>84.5</td><td>27.1 (1.42×)</td><td>21.7</td><td>53.1</td><td>46.1 (0.89×)</td><td>42.9</td></tr>
+      <tr><td class="l">+ AutoHorizon (ECCV 2026), attention</td><td><u>97.4</u></td><td><u>22.3 (1.45×)</u></td><td><u>3.03</u></td><td><u>85.5</u></td><td><u>24.5 (1.57×)</u></td><td><u>3.33</u></td><td>56.8</td><td><b>28.0 (1.46×)</b></td><td><b>4.26</b></td></tr>
+      <tr><td class="l ours">+ Action Upcycling (ours)</td><td class="ours"><b>97.9</b></td><td class="ours"><b>21.9 (1.48×)</b></td><td class="ours"><b>3.00</b></td><td class="ours"><b>86.5</b></td><td class="ours"><b>23.9 (1.61×)</b></td><td class="ours"><b>3.27</b></td><td class="ours"><b>60.5</b></td><td class="ours"><u>29.8 (1.37×)</u></td><td class="ours"><u>4.53</u></td></tr>
     </tbody>
   </table>
   </div>
-  <p class="tcap"><b>Table 2.</b> AAC draws 20 chunks per call and stops where the samples disagree, so its per-call latency grows about six-fold (802 ms) and its time per episode exceeds the baseline. AutoHorizon reads the action expert's self-attention and improves over the baseline. Action Upcycling reads only the predicted chunk, adds no latency, and achieves the highest success rate, the largest call reduction, and the shortest time per episode. Dashes: not evaluated on RoboTwin 2.0.</p>
+  <p class="tcap"><b>Table 2.</b> Success rate (%), policy calls per episode, and inference time per episode (s) of π0.5. Best in <b>bold</b>, second best <u>underlined</u>. AAC draws 20 chunks per call and stops where the samples disagree, so its per-call latency grows six- to seven-fold (802–930 ms) and its time per episode exceeds the baseline; on RoboTwin 2.0 it even calls the policy more often than the baseline (0.89×). AutoHorizon reads the action expert's self-attention; on RoboTwin 2.0 it cuts calls slightly more (1.46×) but drops success below the baseline (56.8 vs. 59.7). Action Upcycling reads only the predicted chunk, adds no latency, and achieves the highest success rate on all three benchmarks.</p>
 
 </section>
 
